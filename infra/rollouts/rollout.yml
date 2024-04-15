@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: nestjs-backend
+  namespace: argocd
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nestjs-backend
+  template:
+    metadata:
+      labels:
+        app: nestjs-backend
+    spec:
+      containers:
+      - name: nestjs-backend
+        image: stablefinance-backend:1.0
+        ports:
+        - containerPort: 8080
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {}
+      analysis:
+        templates:
+        - templateName: success-rate
+      - setWeight: 40
+      - pause: {duration: 48h}
+  analysis:
+    templates:
+    - name: success-rate
+      spec:
+        metrics:
+        - name: request-success-rate
+          interval: 5m
+          threshold: 99
+          prometheus:
+            address: http://prometheus.istio-system.svc.cluster.local:9090
+            query: |
+              sum(rate(istio_requests_total{reporter="destination",destination_service="nestjs-backend.dev.svc.cluster.local",response_code=~"2.*"}[5m]))
+              /
+              sum(rate(istio_requests_total{reporter="destination",destination_service="nestjs-backend.dev.svc.cluster.local"}[5m])) * 100

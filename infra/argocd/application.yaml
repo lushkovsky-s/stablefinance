@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: '<REPOSITORY_URL>'
+    path: path/to/manifests/or/helm/chart
+    targetRevision: HEAD 
+  destination:
+    server: '<CLUSTER_URL>' 
+    namespace: argocd
+  syncPolicy:
+    automated: 
+      prune: true 
+      selfHeal: true 

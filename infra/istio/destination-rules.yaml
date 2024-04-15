@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: nestjs-backend-destination
+  namespace: dev
+spec:
+  host: nestjs-backend
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_CONN 
+    connectionPool:
+      tcp:
+        maxConnections: 100  
+      http:
+        http1MaxPendingRequests: 10
+        maxRequestsPerConnection: 10
+  subsets:
+    - name: stable
+      labels:
+        version: stable 
+    - name: canary
+      labels:
+        version: canary
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

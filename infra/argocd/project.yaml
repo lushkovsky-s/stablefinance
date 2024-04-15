@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: argo-project
+  namespace: argocd
+spec:
+  description: "Stable Finance Argo CD"
+  sourceRepos:
+    - '*'  
+  destinations:
+    - namespace: dev
+      server: 'https://kubernetes.default.svc' 
+  clusterResourceWhitelist:
+    - group: '*' 
+      kind: '*'
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: 'Secret' 
+  roles:
+    - name: developer
+      description: 'Developer role with limited permissions'
+      policies:
+        - 'p, proj:example-project:developer, applications, *, example-project/*, allow'  
+      groups:
+        - 'stablefinance:developers'  
+
+    - name: admin
+      description: 'Admin role with full permissions'
+      policies:
+        - 'p, proj:example-project:admin, applications, *, example-project/*, allow'
+      groups:
+        - 'stablefinance:admins'

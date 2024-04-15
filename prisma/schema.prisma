@@ -1,0 +1,57 @@
+model User {
+  id         String    @id @default(uuid())
+  deleted    Boolean   @default(false)
+  kycPassed  Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime  @default(null)
+  jwtUserId  String
+}
+
+model Contract {
+  address  String   @db.Char(42) @id
+  chain    String   @index(name: "network_idx", type: Hash)
+  ercType  Int      @db.SmallInt 
+  name     String   
+  decimals Int
+  ticker   String   @db.Char(4)
+  logo     String 
+  type     String
+  spam     Boolean
+  meta     Json     @db.JsonB
+
+  @@index([address], name: "address_idx", type: Hash)
+}
+
+model Wallet {
+  address   String  @db.Char(42) @id @index(name: "address_idx", type: Hash)
+  network   Int     @db.SmallInt
+  confirmed Boolean
+  userId    String  @db.Uuid
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@index([network], name: "network_idx")
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  walletId  String   @db.Uuid
+  ts        DateTime @default(now()) @index(type: BTree)
+  from      String   @db.Char(42)
+  to        String   @db.Char(42)
+  hash      String
+
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+
+  @@index([ts], name: "ts_idx")
+}
+
+model WalletPossession {
+  contractId String
+  walletId   String
+  amount     Int     @db.SmallInt
+
+  contract   Contract @relation(fields: [contractId], references: [address])
+  wallet     Wallet   @relation(fields: [walletId], references: [address])
+
+  @@id([contractId, walletId])
+}

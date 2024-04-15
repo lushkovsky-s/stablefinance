@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: nestjs-backend-virt-service
+  namespace: dev
+spec:
+  hosts:
+    - nestjs-backend 
+  gateways:
+    - main-gateway  
+  http:
+    - match:
+        - uri:
+            prefix: /  
+      route:
+        - destination:
+            host: nestjs-backend
+            subset: stable
+            port:
+              number: 3000
+          weight: 90  
+        - destination:
+            host: nestjs-backend
+            subset: canary
+            port:
+              number: 3000
+          weight: 10  
